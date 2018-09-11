@@ -40,12 +40,14 @@ def landuse_calcs(rp_calc):
     vta_final['abag_WHOEMP_dist'] = round(vta_final['WHOEMP']/(vta_final['RETEMP'] + vta_final['SEREMP'] + vta_final['OTHEMP'] + vta_final['AGEMP'] + vta_final['MANEMP'] + vta_final['WHOEMP'])*vta_final['abag_TEMP_dist'])
 
     bad_criteria = "abag_TOTHH_dist > 0 & abag_HHPOP_dist == 0 & TAZ <= 1490"
+    vta_final.loc[vta_final.eval(bad_criteria), 'cleaning_rule_5'] = 1
     city_hhpop_tothh_average = (vta_final.groupby(["CITY"])['abag_HHPOP_dist'].sum() / vta_final.groupby(["CITY"])['abag_TOTHH_dist'].sum()).reset_index().rename(columns={0:'HHPOP/TOTHH'})
     vta_final = pd.merge(vta_final, city_hhpop_tothh_average, how = 'left')
     vta_final.loc[vta_final.eval(bad_criteria), 'abag_TOTPOP_dist'] = vta_final.loc[vta_final.eval(bad_criteria), 'abag_TOTHH_dist']*vta_final.loc[vta_final.eval(bad_criteria), 'HHPOP/TOTHH']
     vta_final.loc[vta_final.eval(bad_criteria), 'abag_HHPOP_dist'] = vta_final.loc[vta_final.eval(bad_criteria), 'abag_TOTHH_dist']*vta_final.loc[vta_final.eval(bad_criteria), 'HHPOP/TOTHH']
 
-    bad_criteria = "abag_TOTHH_dist > 0 & abag_HHPOP_dist == 0 & TAZ > 1490"    
+    bad_criteria = "abag_TOTHH_dist > 0 & abag_HHPOP_dist == 0 & TAZ > 1490"
+    vta_final.loc[vta_final.eval(bad_criteria), 'cleaning_rule_6'] = 1    
     sdist_hhpop_tothh_average = (vta_final.groupby(["SDIST"])['abag_HHPOP_dist'].sum() / vta_final.groupby(["SDIST"])['abag_TOTHH_dist'].sum()).reset_index().rename(columns={0:'SD_HHPOP/TOTHH'})
     vta_final = pd.merge(vta_final, sdist_hhpop_tothh_average, how = 'left')
     vta_final.loc[vta_final.eval(bad_criteria), 'abag_TOTPOP_dist'] = vta_final.loc[vta_final.eval(bad_criteria), 'abag_TOTHH_dist']*vta_final.loc[vta_final.eval(bad_criteria), 'SD_HHPOP/TOTHH']
@@ -71,14 +73,17 @@ def landuse_calcs(rp_calc):
     vta_final['abag_MFHH_dist'] = round(vta_final['MFHH']/(vta_final['SFHH'] + vta_final['MFHH'])*vta_final['abag_TOTHH_dist'])
 
     bad_criteria = "abag_HHPOP_dist > abag_TOTPOP_dist"
+    vta_final.loc[vta_final.eval(bad_criteria), 'cleaning_rule_7'] = 1
     vta_final.loc[vta_final.eval(bad_criteria), 'abag_HHPOP_dist'] = vta_final.loc[vta_final.eval(bad_criteria), 'abag_TOTPOP_dist']
 
     bad_criteria = "TAZ <= 1490 & (abag_EMPRES_dist > abag_HHPOP_dist | abag_TOTHH_dist >= 50 & abag_EMPRES_dist == 0)"
+    vta_final.loc[vta_final.eval(bad_criteria), 'cleaning_rule_8'] = 1
     city_empres_tothh_average = (vta_final.groupby(["CITY"])['abag_EMPRES_dist'].sum() / vta_final.groupby(["CITY"])['abag_TOTHH_dist'].sum()).reset_index().rename(columns={0:'EMPRES/TOTHH'})
     vta_final = pd.merge(vta_final, city_empres_tothh_average, how = 'left')
     vta_final.loc[vta_final.eval(bad_criteria), 'abag_EMPRES_dist'] = vta_final.loc[vta_final.eval(bad_criteria), 'abag_TOTHH_dist']*vta_final.loc[vta_final.eval(bad_criteria), 'EMPRES/TOTHH']
     
     bad_criteria = "TAZ > 1490 & (abag_EMPRES_dist > abag_HHPOP_dist | abag_TOTHH_dist >= 50 & abag_EMPRES_dist == 0)"
+    vta_final.loc[vta_final.eval(bad_criteria), 'cleaning_rule_8'] = 1
     sdist_empres_tothh_average = (vta_final.groupby(["SDIST"])['abag_EMPRES_dist'].sum() / vta_final.groupby(["SDIST"])['abag_TOTHH_dist'].sum()).reset_index().rename(columns={0:'SD_EMPRES/TOTHH'})
     vta_final = pd.merge(vta_final, sdist_empres_tothh_average, how = 'left')
     vta_final.loc[vta_final.eval(bad_criteria), 'abag_EMPRES_dist'] = vta_final.loc[vta_final.eval(bad_criteria), 'abag_TOTHH_dist']*vta_final.loc[vta_final.eval(bad_criteria), 'SD_EMPRES/TOTHH']
